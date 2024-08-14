@@ -1,0 +1,23 @@
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload de Processos</title>
+    <link rel="stylesheet" href="style2.css">
+</head>
+<body>
+    <div class="container">
+        <img src="logo-top.png" alt="Logo do Sistema" class="logo">
+        <h2>Sistema de Distribuição Processual</h2>
+        <h1>Upload de Processos</h1>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <label for="file">Selecione o arquivo Excel:</label>
+            <input type="file" name="file" id="file" accept=".xlsx" required><br><br>
+            <button type="submit">Upload</button>
+        </form>
+    </div>
+</body>
+</html>

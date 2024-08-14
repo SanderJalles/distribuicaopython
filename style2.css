@@ -1,0 +1,79 @@
+
+/* Centraliza o conteúdo */
+body {
+    background-color: #023472;
+    font-family: Arial, sans-serif;
+    color: white;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Contêiner centralizado */
+.container {
+    justify-content: center;
+    text-align: center;
+    background-color: #ffffff1a; /* Fundo semi-transparente */
+    padding: 30px;
+    border-radius: 10px;
+}
+
+/* Estiliza a logo */
+.logo {
+    width: auto;
+    max-width: 150px;
+    margin-bottom: 20px;
+}
+
+/* Estiliza os títulos */
+h1, h2 {
+    margin: 10px 0;
+}
+/* Estiliza o título h1*/
+h1{
+    margin-bottom: 20px;
+}
+/* Estiliza o formulário */
+form {
+    margin-top: 20px;
+}
+
+/* Estiliza as labels */
+label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+/* Estiliza os campos de entrada de texto e arquivo */
+input[type="text"],
+input[type="file"] {
+    width: 70%;
+    height: auto;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* Estiliza o botão de upload */
+button {
+    width: 80%;
+    padding: 10px;
+    background-color: white;
+    color: #023472;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* Efeito hover no botão */
+button:hover {
+    background-color: #e0e0e0;
+}

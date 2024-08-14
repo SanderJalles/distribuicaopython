@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Distribuição Processual</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main>
+        <div class="container">
+            <form id="loginForm" method="POST">
+                <img class="imgLogo" src="logo-top.png" alt="Logo">
+                <h3><span class="highlight">Sistema de Distribuição Processual</span></h3>
+                <div class="username">
+                    <input class="username" type="number" id="username" name="username" placeholder="Matrícula" autocomplete="off" maxlength="6" required readonly>
+                </div> 
+                <div class="password">
+                    <input class="password" type="password" id="inputpassword" name="password" placeholder="Senha" required readonly>
+                </div>
+                <button type="submit" class="btn-submit">Entrar</button>
+                <div id="status"></div>
+            </form>
+        </div>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
