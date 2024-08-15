@@ -45,28 +45,15 @@ def upload():
 
             df_filtrado = df[required_columns]
 
-            # Buscando todos os usuários da tabela `usuarios`
+            # Selecionando os usuários do banco de dados
             query_usuarios = "SELECT nome FROM usuario"
-            usuarios = pd.read_sql(query_usuarios, engine)
+            usuarios = pd.read_sql(query_usuarios, engine)['nome'].tolist()
 
-            # Contando processos já distribuídos por usuário
-            query_contagem = "SELECT responsavel, COUNT(*) as count FROM processos_distribuidos GROUP BY responsavel"
-            contagem_processos = pd.read_sql(query_contagem, engine)
-            contagem_processos = contagem_processos.set_index('responsavel').reindex(usuarios['nome'], fill_value=0).reset_index()
-
-            # Ordenando os usuários pela quantidade de processos atribuídos (ordem crescente)
-            usuarios_ordenados = contagem_processos.sort_values(by='count')['responsavel'].tolist()
-
-            # Distribuindo os responsáveis de forma justa e aleatória
+            # Distribuindo os responsáveis aleatoriamente de forma justa
             num_processos = len(df_filtrado)
-            responsaveis = []
-            for i in range(num_processos):
-                usuario = usuarios_ordenados[i % len(usuarios_ordenados)]
-                responsaveis.append(usuario)
-
-            # Misturando a lista de responsáveis para aleatoriedade
+            responsaveis = np.tile(usuarios, num_processos // len(usuarios) + 1)[:num_processos]
             np.random.shuffle(responsaveis)
-            df_filtrado['responsavel'] = responsaveis
+            df_filtrado['responsavel'] = responsaveis  # Criando a coluna 'responsavel'
 
             # Salvando os novos dados no banco de dados
             df_filtrado.to_sql('processos_distribuidos', engine, if_exists='append', index=False)
