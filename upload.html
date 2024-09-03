@@ -15,9 +15,14 @@
         <h1>Upload de Processos</h1>
         <form action="/upload" method="post" enctype="multipart/form-data">
             <label for="file">Selecione o arquivo Excel:</label>
-            <input type="file" name="file" id="file" accept=".xlsx" required><br><br>
+            <input type="file" name="file" id="file" required>
+            <!-- Novo campo para o número de processos -->
+            <label for="num_processos">Número de processos para distribuir:</label>
+            <input type="number" name="num_processos" id="num_processos" min="1" value="4" required>
+            
             <button type="submit">Upload</button>
         </form>
+    
     </div>
 </body>
 </html>
