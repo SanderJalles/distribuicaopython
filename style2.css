@@ -16,7 +16,7 @@ body {
 .container {
     justify-content: center;
     text-align: center;
-    background-color: #ffffff1a; /* Fundo semi-transparente */
+    background-color: #023472; /* Fundo semi-transparente */
     padding: 30px;
     border-radius: 10px;
 }
@@ -61,6 +61,7 @@ input[type="file"] {
 
 /* Estiliza o botão de upload */
 button {
+    margin-top: 10px;
     width: 80%;
     padding: 10px;
     background-color: white;
@@ -76,4 +77,29 @@ button {
 /* Efeito hover no botão */
 button:hover {
     background-color: #e0e0e0;
+}
+
+
+#num_processos{
+    border-radius: 5px;
+    width: 40%;
+    padding: 5px;
+    margin: 10px 0;
+    border: 2px solid #ffffff;
+    font-size: 16px;
+    text-align: center;
+}
+
+#num_processos:focus{
+    border: 4px solid #021c3d;
+    border-radius: 5px;
+    outline: none;
+    box-shadow: 5px solid;
+}
+
+/* Remover setas de incremento/decremento no campo */
+#num_processos::-webkit-outer-spin-button,
+#num_processos::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }

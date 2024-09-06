@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, send_file, session, send_from_directory
+from flask import Flask, request, redirect, send_file, session, send_from_directory, jsonify
 import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
@@ -35,7 +35,7 @@ def upload():
         max_processos = int(request.form.get('max_processos', default=0))  # Número máximo de processos definido pelo usuário
 
         if not file:
-            return "Nenhum arquivo foi enviado."
+            return jsonify({"status": "error", "message": "Nenhum arquivo foi enviado."})
 
         try:
             # Lendo o arquivo Excel enviado
@@ -43,7 +43,7 @@ def upload():
             required_columns = ['númeroprocesso', 'setoratual', 'localização_caixa', 'datacadastro']
 
             if not all(col in df.columns for col in required_columns):
-                return "Arquivo inválido. Certifique-se de que o arquivo contém as colunas obrigatórias."
+                return jsonify({"status": "error", "message": "Arquivo inválido. Certifique-se de que o arquivo contém as colunas obrigatórias."})
 
             df_filtrado = df[required_columns]
 
@@ -58,11 +58,9 @@ def upload():
             # Filtrar apenas processos que ainda não foram distribuídos
             df_filtrado = df_filtrado[~df_filtrado['númeroprocesso'].isin(processos_existentes_set)]
 
-            # Verificação de quantos processos foram filtrados
-            print(f"Processos novos a serem inseridos: {len(df_filtrado)}")
-
             if df_filtrado.empty:
-                return "Todos os processos do arquivo já estão no banco de dados."
+                # Se todos os processos já estão no banco de dados, retornar uma resposta com a mensagem
+                return jsonify({"status": "warning", "message": "Todos os processos do arquivo já estão no banco de dados."})
 
             # Selecionando os usuários do banco de dados
             query_usuarios = "SELECT nome FROM usuario"
@@ -76,13 +74,21 @@ def upload():
                 df_filtrado = df_filtrado.reset_index(drop=True)  # Resetar index para evitar erros ao adicionar nova coluna
                 df_filtrado.loc[:, 'responsavel'] = responsaveis  # Criando a coluna 'responsavel'
 
+                # Lista para armazenar mensagens de processos duplicados
+                duplicados = []
+
                 # Fazendo um insert separado para cada processo
                 for _, row in df_filtrado.iterrows():
                     try:
                         # Inserindo o processo no banco de dados
                         row.to_frame().T.to_sql('processos_distribuidos', engine, if_exists='append', index=False)
                     except IntegrityError:
-                        print(f"Processo {row['númeroprocesso']} já existe no banco de dados. Ignorando.")
+                        # Acumulando a mensagem de processo duplicado
+                        duplicados.append(f"Processo {row['númeroprocesso']} já existe no banco de dados.")
+
+            # Verificar se houve processos duplicados
+            if duplicados:
+                return jsonify({"status": "warning", "message": "Alguns processos já estavam no banco de dados.", "duplicados": duplicados})
 
             # Consultando todos os dados da tabela após a inserção
             df_final = pd.read_sql('SELECT * FROM processos_distribuidos', engine)
@@ -94,7 +100,7 @@ def upload():
             return send_file(output_path, as_attachment=True)
 
         except Exception as e:
-            return f"Erro ao processar o arquivo: {e}"
+            return jsonify({"status": "error", "message": f"Erro ao processar o arquivo: {e}"})
 
     return send_from_directory('.', 'upload.html')
 

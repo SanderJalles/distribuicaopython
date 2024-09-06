@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -7,22 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload de Processos</title>
     <link rel="stylesheet" href="style2.css">
+    <link rel="stylesheet" href="popupstyle.css">
 </head>
 <body>
     <div class="container">
         <img src="logo-top.png" alt="Logo do Sistema" class="logo">
         <h2>Sistema de Distribuição Processual</h2>
         <h1>Upload de Processos</h1>
-        <form action="/upload" method="post" enctype="multipart/form-data">
+
+        <!-- Alterando o formulário para chamar a função handleUpload -->
+        <form id="uploadForm" enctype="multipart/form-data">
             <label for="file">Selecione o arquivo Excel:</label>
             <input type="file" name="file" id="file" required>
+
             <!-- Novo campo para o número de processos -->
             <label for="num_processos">Número de processos para distribuir:</label>
             <input type="number" name="num_processos" id="num_processos" min="1" value="4" required>
             
             <button type="submit">Upload</button>
         </form>
-    
     </div>
+
+    <!-- Popup de aviso -->
+    <div id="popup" style="display: none;">
+        <span></span>
+        <button onclick="closePopup()">Fechar</button>
+    </div>
+
+    <!-- Incluir o arquivo JS -->
+    <script src="popupJS.js"></script>
+    <script>
+        // Atrelando o evento de submit à função handleUpload
+        document.getElementById("uploadForm").addEventListener("submit", handleUpload);
+    </script>
 </body>
 </html>
