@@ -1,39 +1,45 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const usernameField = document.getElementById('username');
-    const passwordField = document.getElementById('inputpassword');
-    const loginForm = document.getElementById('loginForm');
-    const statusDiv = document.getElementById('status');
+function handleUpload(event) {
+    event.preventDefault();  // Previne o comportamento padrão do formulário
 
-    // Habilita os campos de entrada após um atraso (simulando uma lógica de desbloqueio)
-    setTimeout(() => {
-        usernameField.removeAttribute('readonly');
-        passwordField.removeAttribute('readonly');
-    }, 1000); // O atraso pode ser ajustado conforme necessário
+    const formData = new FormData(event.target);  // Captura os dados do formulário
 
-    // Limita o campo de matrícula a 6 dígitos
-    usernameField.addEventListener('input', () => {
-        if (usernameField.value.length > 6) {
-            usernameField.value = usernameField.value.slice(0, 6);
-        }
-    });
+    fetch('/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        // Verificar o tipo de conteúdo da resposta
+        const contentType = response.headers.get('content-type');
 
-    // Adiciona um evento de submit ao formulário de login
-    loginForm.addEventListener('submit', (event) => {
-        event.preventDefault(); // Evita o envio do formulário padrão
-
-        const username = usernameField.value;
-        const password = passwordField.value;
-
-        // Simula uma validação de login
-        if (username === '121212' && password === 'password') {
-            statusDiv.textContent = 'Login bem-sucedido!';
-            statusDiv.style.color = 'green';
-
-            // Redireciona para a página de upload após a validação bem-sucedida
-            window.location.href = 'upload.html'; // Redireciona para a página de upload
+        if (contentType && contentType.includes('application/json')) {
+            return response.json();  // Se for JSON, processa como JSON
+        } else if (contentType && contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
+            return response.blob();  // Se for um arquivo Excel, processa como Blob
         } else {
-            statusDiv.textContent = 'Login falhou. Verifique suas credenciais.';
-            statusDiv.style.color = 'red';
+            throw new Error("Tipo de resposta desconhecido: " + contentType);
         }
+    })
+    .then(data => {
+        if (data instanceof Blob) {
+            // Se a resposta for um arquivo Excel, processa o download
+            const url = window.URL.createObjectURL(data);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'processosdistribuidos_completos.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        } else if (data.status === "warning") {
+            alert(data.message);  // Alerta de aviso
+        } else if (data.status === "success") {
+            alert("Processos distribuídos com sucesso!");  // Alerta de sucesso
+        } else if (data.status === "error") {
+            alert("Erro: " + data.message);  // Alerta de erro
+        }
+    })
+    .catch(error => {
+        alert("Erro ao fazer upload: " + error);
     });
-});
+}
+
+document.getElementById('uploadForm').addEventListener('submit', handleUpload);

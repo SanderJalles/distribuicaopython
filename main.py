@@ -1,11 +1,11 @@
-from flask import Flask, request, redirect, send_file, session, send_from_directory, jsonify
+from flask import Flask, request, redirect, send_file, session, send_from_directory, jsonify, make_response
 import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 
 app = Flask(__name__, static_folder='.', template_folder='.')
-app.secret_key = 'sua_chave_secreta'  # Necessário para usar sessões
+app.secret_key = 'sua_chave_secreta'
 
 # Configuração do banco de dados
 DATABASE_URL = 'postgresql://postgres:123456@localhost:5432/postgres'
@@ -18,12 +18,13 @@ def login():
         username = request.form['username']
         password = request.form['password']
         
-        # Validação simples de login
         if username == '121212' and password == 'password':
             session['logged_in'] = True
             return redirect('/upload')
         else:
-            return send_from_directory('.', 'login.html', headers={'X-Status': 'Login falhou. Verifique suas credenciais.'})
+            response = make_response(send_from_directory('.', 'login.html'))
+            response.headers['X-Status'] = 'Login falhou. Verifique suas credenciais.'
+            return response
 
     return send_from_directory('.', 'login.html')
 
@@ -55,10 +56,12 @@ def upload():
             processos_existentes = pd.read_sql('SELECT númeroprocesso FROM processos_distribuidos', engine)
             processos_existentes_set = set(processos_existentes['númeroprocesso'])
 
-            # Filtrar apenas processos que ainda não foram distribuídos
-            df_filtrado = df_filtrado[~df_filtrado['númeroprocesso'].isin(processos_existentes_set)]
+            # Separar os processos duplicados dos novos
+            processos_duplicados = df_filtrado[df_filtrado['númeroprocesso'].isin(processos_existentes_set)]
+            processos_novos = df_filtrado[~df_filtrado['númeroprocesso'].isin(processos_existentes_set)]
 
-            if df_filtrado.empty:
+            # Verificar se há novos processos para serem distribuídos
+            if processos_novos.empty:
                 # Se todos os processos já estão no banco de dados, retornar uma resposta com a mensagem
                 return jsonify({"status": "warning", "message": "Todos os processos do arquivo já estão no banco de dados."})
 
@@ -67,24 +70,22 @@ def upload():
             usuarios = pd.read_sql(query_usuarios, engine)['nome'].tolist()
 
             # Distribuindo os responsáveis aleatoriamente de forma justa
-            num_processos = len(df_filtrado)
-            if num_processos > 0:
-                responsaveis = np.tile(usuarios, num_processos // len(usuarios) + 1)[:num_processos]
-                np.random.shuffle(responsaveis)
-                df_filtrado = df_filtrado.reset_index(drop=True)  # Resetar index para evitar erros ao adicionar nova coluna
-                df_filtrado.loc[:, 'responsavel'] = responsaveis  # Criando a coluna 'responsavel'
+            num_processos = len(processos_novos)
+            responsaveis = np.tile(usuarios, num_processos // len(usuarios) + 1)[:num_processos]
+            np.random.shuffle(responsaveis)
+            processos_novos = processos_novos.reset_index(drop=True)  # Resetar index para evitar erros ao adicionar nova coluna
+            processos_novos.loc[:, 'responsavel'] = responsaveis  # Criando a coluna 'responsavel'
 
-                # Lista para armazenar mensagens de processos duplicados
-                duplicados = []
+            # Lista para armazenar mensagens de processos duplicados
+            duplicados = processos_duplicados['númeroprocesso'].tolist()
 
-                # Fazendo um insert separado para cada processo
-                for _, row in df_filtrado.iterrows():
-                    try:
-                        # Inserindo o processo no banco de dados
-                        row.to_frame().T.to_sql('processos_distribuidos', engine, if_exists='append', index=False)
-                    except IntegrityError:
-                        # Acumulando a mensagem de processo duplicado
-                        duplicados.append(f"Processo {row['númeroprocesso']} já existe no banco de dados.")
+            # Fazendo um insert separado para cada processo novo
+            for _, row in processos_novos.iterrows():
+                try:
+                    # Inserindo o processo novo no banco de dados
+                    row.to_frame().T.to_sql('processos_distribuidos', engine, if_exists='append', index=False)
+                except IntegrityError:
+                    duplicados.append(f"Processo {row['númeroprocesso']} já existe no banco de dados.")
 
             # Verificar se houve processos duplicados
             if duplicados:
@@ -103,6 +104,19 @@ def upload():
             return jsonify({"status": "error", "message": f"Erro ao processar o arquivo: {e}"})
 
     return send_from_directory('.', 'upload.html')
+
+@app.route('/historico')
+def historico():
+    try:
+        # Consultar a tabela de processos distribuídos
+        df_historico = pd.read_sql('SELECT * FROM processos_distribuidos', engine)
+        
+        # Converter os dados para uma lista de dicionários
+        historico_data = df_historico.to_dict(orient='records')
+        
+        return jsonify({"status": "success", "data": historico_data})
+    except Exception as e:
+        return jsonify({"status": "error", "message": f"Erro ao consultar o histórico: {e}"})
 
 # Rota para arquivos estáticos
 @app.route('/<path:filename>')

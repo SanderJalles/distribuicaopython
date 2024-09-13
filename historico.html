@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico de Distribuições</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Histórico de Distribuições</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Número do Processo</th>
+                <th>Setor Atual</th>
+                <th>Localização Caixa</th>
+                <th>Data de Cadastro</th>
+                <th>Responsável</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data %}
+            <tr>
+                <td>{{ row['númeroprocesso'] }}</td>
+                <td>{{ row['setoratual'] }}</td>
+                <td>{{ row['localização_caixa'] }}</td>
+                <td>{{ row['datacadastro'] }}</td>
+                <td>{{ row['responsavel'] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
