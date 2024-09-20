@@ -18,12 +18,18 @@
             <label for="file">Selecione o arquivo Excel:</label>
             <input type="file" name="file" id="file" required>
 
-            <!-- Novo campo para o número de processos -->
-            <label for="num_processos">Número de processos para distribuir:</label>
-            <input type="number" name="num_processos" id="num_processos" min="1" value="4" required>
-            
+            <!-- Div para mostrar a checklist após o upload do arquivo -->
+            <div id="checklistDiv">
+                <h3>Selecione os processos para distribuir:</h3>
+                <div id="checklist"></div>
+            </div>
+
             <button type="submit">Upload</button>
         </form>
+
+        <!-- Botão de checklist sempre visível -->
+        <button id="checklistButton">Checklist</button>
+
         <a href="/historico">
             <button>Histórico de Distribuições</button>
         </a>
@@ -36,10 +42,6 @@
     </div>
 
     <!-- Incluir o arquivo JS -->
-    <script src="upload.JS"></script>
-    <script>
-        // Atrelando o evento de submit à função handleUpload
-        document.getElementById("uploadForm").addEventListener("submit", handleUpload);
-    </script>
+    <script src="upload.js"></script>
 </body>
 </html>

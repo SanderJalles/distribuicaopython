@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checklist de Processos</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .processos-table { width: 100%; border-collapse: collapse; }
+        .processos-table th, .processos-table td { padding: 8px; text-align: left; border: 1px solid #ddd; }
+        .processos-table th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h2>Checklist de Processos</h2>
+
+    <form id="checklistForm" method="POST" action="/distribuir_processos">
+        <table class="processos-table">
+            <thead>
+                <tr>
+                    <th>Selecionar</th>
+                    {% for column in columns %}
+                    <th>{{ column }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    <td><input type="checkbox" name="selected_processos" value="{{ row['Processo'] }}"></td>
+                    {% for key, value in row.items() %}
+                    <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit">Distribuir Processos</button>
+    </form>
+
+</body>
+</html>
