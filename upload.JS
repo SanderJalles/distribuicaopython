@@ -1,11 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     const uploadForm = document.getElementById('uploadForm');
-    const fileInput = document.getElementById('file'); // Corrigido para id "file"
-    const checklistDiv = document.getElementById('checklist');
-    const submitButton = document.getElementById('submitButton');
+    const fileInput = document.getElementById('fileInput');
     const checklistButton = document.getElementById('checklistButton');
 
-    // Função para habilitar o botão "Checklist" ao clicar
+    // Habilitar o botão "Checklist" após o arquivo ser selecionado
     checklistButton.addEventListener('click', () => {
         if (fileInput.files.length === 0) {
             alert('Por favor, selecione um arquivo antes de acessar a checklist.');
@@ -15,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData();
         formData.append('file', fileInput.files[0]);
 
-        // Enviar o arquivo para validar e redirecionar para a tela de checklist
+        // Enviar o arquivo para validar e retornar colunas
         fetch('/checklist', {
             method: 'POST',
             body: formData
@@ -23,7 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                window.location.href = '/checklist';
+                // Se o arquivo for válido, redirecionar para a página checklist
+                window.location.href = '/checklist-page';
             } else {
                 alert('Erro: ' + data.message);
             }
@@ -32,10 +31,11 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Erro ao processar o arquivo: ' + error);
         });
     });
+});
 
-    // Função para submeter o formulário de upload
+    // Ao submeter o formulário
     uploadForm.addEventListener('submit', (event) => {
-        event.preventDefault(); // Previne o comportamento padrão do formulário
+        event.preventDefault();
 
         const formData = new FormData(uploadForm);
 
@@ -57,4 +57,4 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Erro ao fazer upload: " + error);
         });
     });
-});
+

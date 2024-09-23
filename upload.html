@@ -16,7 +16,7 @@
         <!-- Alterando o formulário para chamar a função handleUpload -->
         <form id="uploadForm" enctype="multipart/form-data">
             <label for="file">Selecione o arquivo Excel:</label>
-            <input type="file" name="file" id="file" required>
+            <input type="file" name="file" id="fileInput" required>
 
             <!-- Div para mostrar a checklist após o upload do arquivo -->
             <div id="checklistDiv">
@@ -24,11 +24,9 @@
                 <div id="checklist"></div>
             </div>
 
-            <button type="submit">Upload</button>
+            <button type="button" id="checklistButton">Checklist</button> <!-- Mantém o botão sempre visível -->
+            <button type="submit" id="submitButton">Upload</button>
         </form>
-
-        <!-- Botão de checklist sempre visível -->
-        <button id="checklistButton">Checklist</button>
 
         <a href="/historico">
             <button>Histórico de Distribuições</button>

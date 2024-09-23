@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, send_file, session, send_from_directory, jsonify, make_response
+from flask import Flask, request, redirect, send_from_directory, send_file, session, send_from_directory, jsonify, make_response, render_template
 import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
@@ -162,7 +162,9 @@ def process_file():
 @app.route('/distribuir-processos', methods=['POST'])
 def distribuir_processos():
     try:
-        processos_selecionados = request.json.get('processos')
+        # Recebe a lista de processos selecionados do formulário
+        processos_selecionados = request.form.getlist('selected_processos')  # Mudando para getlist para usar com o formulário
+
         if not processos_selecionados:
             return jsonify({'status': 'error', 'message': 'Nenhum processo foi selecionado.'}), 400
 
@@ -189,11 +191,14 @@ def distribuir_processos():
         responsaveis = np.tile(usuarios, num_processos // len(usuarios) + 1)[:num_processos]
         np.random.shuffle(responsaveis)
 
+        # Filtrando a situação para os valores desejados
+        situacao_padrao = ['TRAMITACAO'] * num_processos  # Substitua se houver lógica específica
+
         # Preparar os dados para inserção no banco
         data_inserir = pd.DataFrame({
             'Processo': processos_novos,
             'responsavel': responsaveis,
-            'Situação': ['TRAMITACAO'] * num_processos,  # Situação padrão
+            'Situação': situacao_padrao,
             'SetorDestino': ['Setor X'] * num_processos  # Setor padrão
         })
 
@@ -206,7 +211,45 @@ def distribuir_processos():
         return jsonify({'status': 'success', 'message': 'Processos distribuídos com sucesso.'})
 
     except Exception as e:
-        return jsonify({'status': 'error', 'message': f'Erro ao distribuir processos: {e}'}) 
+        return jsonify({'status': 'error', 'message': f'Erro ao distribuir processos: {e}'})
+
+
+@app.route('/checklist', methods=['POST'])
+def checklist():
+    try:
+        file = request.files['file']
+
+        if not file.filename.endswith('.csv'):
+            return jsonify({'status': 'error', 'message': 'Arquivo inválido. Apenas arquivos CSV são suportados.'}), 400
+
+        # Tente ler o arquivo CSV
+        try:
+            df = pd.read_csv(file, delimiter=';', encoding='UTF-8')
+        except UnicodeDecodeError:
+            df = pd.read_csv(file, delimiter=';', encoding='ISO-8859-1')
+
+        # Verificar se as colunas obrigatórias estão presentes
+        required_columns = ['Processo', 'Situação', 'SetorDestino']
+        if not all(col in df.columns for col in required_columns):
+            return jsonify({'status': 'error', 'message': f'Colunas faltantes: {", ".join([col for col in required_columns if col not in df.columns])}'}), 400
+
+        # Filtrar apenas os processos com "Situação" = 'TRAMITACAO', 'EM RECEBIMENTO' ou 'ANEXADO'
+        situacoes_permitidas = ['TRAMITACAO', 'EM RECEBIMENTO', 'ANEXADO']
+        df_filtrado = df[df['Situação'].isin(situacoes_permitidas)]
+
+        # Gera a lista de processos para o checklist
+        processos = df_filtrado['Processo'].tolist()
+        return jsonify({'status': 'success', 'processos': processos})
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': f'Erro ao processar o arquivo: {e}'})
+
+# Rota GET para renderizar o arquivo HTML (a tela de checklist)
+@app.route('/checklist-page', methods=['GET'])
+def checklist_page():
+    data = session.get('checklist_data', [])
+    columns = ['Processo', 'Situação', 'SetorDestino']
+    return render_template('checklist.html', data=data, columns=columns)
 
 # Rota para arquivos estáticos
 @app.route('/<path:filename>')
